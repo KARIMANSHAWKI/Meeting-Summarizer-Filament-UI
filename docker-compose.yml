@@ -1,0 +1,54 @@
+version: "3.9"
+services:
+  nginx:
+    build: services/nginx/
+    container_name: filament-nginx
+    ports:
+      - "8091:80"
+    volumes:
+      - ./app/:/var/www/html/
+    depends_on:
+      - php
+      - db
+      - redis
+  php:
+    build: services/php/
+    container_name: filament-php
+    expose:
+      - "9000"
+    volumes:
+      - ./app/:/var/www/html/
+    depends_on:
+      - db
+      - redis
+  db:
+    image: mariadb:11
+    container_name: filament-db
+    ports:
+      - "3361:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    environment:
+      MARIADB_ROOT_PASSWORD: password
+      MARIADB_DATABASE: book_recommendation_system
+      MARIADB_PASSWORD: password
+      MARIADB_USER: root
+  redis:
+    image: redis:7-alpine
+    container_name: filament-redis
+    command: ["redis-server", "--appendonly", "no"]
+    ports:
+      - "6301:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  mysql-data:
+  redis-data:
+
+
+
